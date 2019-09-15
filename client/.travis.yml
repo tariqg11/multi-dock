@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t tariq/react-test -f ./client/Dockerfile.dev
+
+
+script:
+  - docker run -e CI=true tariq/react-test npm test
+
+after_success:
+  - docker build -t tariq/multi-client ./client
+  - docker build -t tariq/multi-nginx ./nginx
+  - docker build -t tariq/multi-server ./server
+  - docker build -t tariq/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push tariq/multi-client
+  - docker push tariq/multi-nginx
+  - docker push tariq/multi-server
+  - docker push tariq/multi-worker
+
